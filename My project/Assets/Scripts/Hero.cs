@@ -4,16 +4,23 @@ using UnityEngine;
 
 public class NewBehaviourScript : MonoBehaviour
 {
-    [SerializeField] private float speed = 3f; // скорость движения
+    [SerializeField] private float speed = 4f; // скорость движения
     [SerializeField] private int lives = 5; // количество жизней
-    [SerializeField] private float jumpForce = 15f; // сила прыжка  
+    [SerializeField] private float jumpForce = 30f; // сила прыжка  
+    [SerializeField] private float airControlFactor = 0.6f; // Контроль в воздухе
     private bool isGrounded = false;    
 
 
     private Rigidbody2D rb;
     private SpriteRenderer sprite;
+    private bool jumpRequest;
 
     
+    [SerializeField] private Transform groundCheck; // Точка для проверки, на земле ли персонаж
+    [SerializeField] private float checkRadius = 0.2f; // Радиус проверки
+    [SerializeField] private LayerMask whatIsGround; // Слой, представляющий землю
+
+
     private void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
@@ -22,14 +29,20 @@ public class NewBehaviourScript : MonoBehaviour
 
     private void FixedUpdate()
     {
+        Move();
         CheckGround();
+        if (jumpRequest)
+        {
+            Jump();
+            jumpRequest = false;
+        }
     }
 
     private void Update()
     {
         if (Input.GetButton("Horizontal"))
             Run();
-        if (isGrounded && Input.GetButton("Jump"))
+        if (isGrounded && Input.GetButtonDown("Jump"))
             Jump();
     }
 
@@ -42,9 +55,23 @@ public class NewBehaviourScript : MonoBehaviour
         sprite.flipX = dir.x < 0.0f;
     }
 
+    private void Move()
+    {
+        float moveInput = Input.GetAxis("Horizontal");
+
+        if (isGrounded)
+        {
+            rb.velocity = new Vector2(moveInput * speed, rb.velocity.y);
+        }
+        else
+        {
+            rb.velocity = new Vector2(moveInput * speed * airControlFactor, rb.velocity.y);
+        }
+    }
+   
     private void Jump()
     {
-        rb.AddForce(transform.up * jumpForce, ForceMode2D.Impulse);
+        rb.velocity = new Vector2(rb.velocity.x, jumpForce);
     }
 
     private void CheckGround()
