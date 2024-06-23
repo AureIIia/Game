@@ -8,14 +8,14 @@ public class NewBehaviourScript : MonoBehaviour
     [SerializeField] private int lives = 5; // количество жизней
     [SerializeField] private float jumpForce = 30f; // сила прыжка  
     [SerializeField] private float airControlFactor = 0.6f; // Контроль в воздухе
-    private bool isGrounded = false;    
+    private bool isGrounded = false;
 
 
     private Rigidbody2D rb;
     private SpriteRenderer sprite;
     private bool jumpRequest;
 
-    
+
     [SerializeField] private Transform groundCheck; // Точка для проверки, на земле ли персонаж
     [SerializeField] private float checkRadius = 0.2f; // Радиус проверки
     [SerializeField] private LayerMask whatIsGround; // Слой, представляющий землю
@@ -49,9 +49,9 @@ public class NewBehaviourScript : MonoBehaviour
     private void Run()
     {
         Vector3 dir = transform.right * Input.GetAxis("Horizontal");
-    
+
         transform.position = Vector3.MoveTowards(transform.position, transform.position + dir, speed * Time.deltaTime);
-        
+
         sprite.flipX = dir.x < 0.0f;
     }
 
@@ -68,7 +68,7 @@ public class NewBehaviourScript : MonoBehaviour
             rb.velocity = new Vector2(moveInput * speed * airControlFactor, rb.velocity.y);
         }
     }
-   
+
     private void Jump()
     {
         rb.velocity = new Vector2(rb.velocity.x, jumpForce);
@@ -80,3 +80,4 @@ public class NewBehaviourScript : MonoBehaviour
         isGrounded = collider.Length > 1;
     }
 }
+
