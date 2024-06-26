@@ -1,8 +1,8 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class NewBehaviourScript : MonoBehaviour
+public class Hero : MonoBehaviour
 {
     [SerializeField] private float speed = 4f; // скорость движения
     [SerializeField] private int lives = 5; // количество жизней
@@ -13,6 +13,7 @@ public class NewBehaviourScript : MonoBehaviour
 
     private Rigidbody2D rb;
     private SpriteRenderer sprite;
+    private Animator anim;
     private bool jumpRequest;
 
 
@@ -20,10 +21,16 @@ public class NewBehaviourScript : MonoBehaviour
     [SerializeField] private float checkRadius = 0.2f; // Радиус проверки
     [SerializeField] private LayerMask whatIsGround; // Слой, представляющий землю
 
+    private States State
+    {
+        get { return (States)anim.GetInteger("state"); }
+        set { anim.SetInteger("state", (int)value); }
+    }
 
     private void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
+        anim = GetComponent<Animator>();
         sprite = GetComponentInChildren<SpriteRenderer>();
     }
 
@@ -40,6 +47,8 @@ public class NewBehaviourScript : MonoBehaviour
 
     private void Update()
     {
+        if (isGrounded) State = States.idle;
+
         if (Input.GetButton("Horizontal"))
             Run();
         if (isGrounded && Input.GetButtonDown("Jump"))
@@ -48,6 +57,7 @@ public class NewBehaviourScript : MonoBehaviour
 
     private void Run()
     {
+        if (isGrounded) State = States.run;
         Vector3 dir = transform.right * Input.GetAxis("Horizontal");
 
         transform.position = Vector3.MoveTowards(transform.position, transform.position + dir, speed * Time.deltaTime);
@@ -78,6 +88,33 @@ public class NewBehaviourScript : MonoBehaviour
     {
         Collider2D[] collider = Physics2D.OverlapCircleAll(transform.position, 0.3f);
         isGrounded = collider.Length > 1;
+        if (!isGrounded) State = States.jump;
     }
 }
 
+public enum States
+{
+    idle,
+    run,
+    jump
+}
+
+public class CameraController : MonoBehaviour
+{
+    [SerializeField] private Transform player;
+    private Vector3 pos;
+
+    private void Awake()
+    {
+        if (!player)
+        {
+           player = FindObjectOfType<Hero>().transform;
+        }
+    }
+    private void Update()
+    {
+        pos = player.position;
+
+        transform.position = Vector3.Lerp(transform.position, pos, Time.deltaTime);
+    }
+}
